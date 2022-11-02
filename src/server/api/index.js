@@ -162,6 +162,43 @@ router.get('/api/tracks/', (req, res) =>
     res.send(trackList);
 });
 
+// Display the Information of Specific Artist id when you mention the artist name
+router.get('/api/artists/:artist_name', (req, res) => 
+{
+    let artistList="[";
+    artists.forEach(element => {
+        
+        console.log('Getting artist id from artist name: ' + typeof element.artist_name + typeof req.name);
+        if ( element.artist_name === req.name )
+        {
+            let artist = {};
+            artist.artist_id = element.artist_id;
+
+            artist = JSON.stringify(artist);
+            artistList+=artist + ',';
+        }
+    });
+
+    //Remove any trailing comma
+    let regex = /,$/g;
+    artistList = artistList.replace(regex, "");
+
+    //Close the JSON string
+    artistList+="]";
+    res.send(artistList);
+
+    /*
+    //If there is no valid customer ID, then discplay an error with foll msg
+    if (!true)
+        res.status(404).send('<h2> Oops cant find</h2>');
+    
+    else
+        console.log('Getting artist id from artist name: ' + req.name);// + " " + artist.artist_id);  
+    
+    
+    res.send(artist.artist_id);*/
+});
+
 app.use('/', router);
 
 //PORT ENVIRONMENT VARIABLE
