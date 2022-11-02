@@ -10,6 +10,7 @@ const router = express.Router();
 //Give data to the server
 var genres = null;
 var artists = null;
+var tracks = null;
 
 //Read all the required JSON files
 const fs = require("fs");
@@ -34,6 +35,19 @@ fs.readFile("../../../resources/json/raw_artists.json", "utf8", (err, jsonString
     try {
       console.log("Reading artists JSON file from disk:");
       artists = JSON.parse(jsonString);
+    } catch (err) {
+      console.log("Error parsing JSON string:", err);
+    }
+  });
+
+  fs.readFile("../../../resources/json/raw_tracks.json", "utf8", (err, jsonString) => {
+    if (err) {
+      console.log("Error reading file from disk:", err);
+      return;
+    }
+    try {
+      console.log("Reading tracks JSON file from disk:");
+      tracks = JSON.parse(jsonString);
     } catch (err) {
       console.log("Error parsing JSON string:", err);
     }
