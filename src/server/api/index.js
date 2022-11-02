@@ -38,7 +38,7 @@ fs.readFile("../../../resources/json/raw_artists.json", "utf8", (err, jsonString
       console.log("Error parsing JSON string:", err);
     }
   });
-  
+
 // route middleware that will happen on every request
 router.use(function(req, res, next) {
 
@@ -61,12 +61,12 @@ router.get('/api/genres/', (req, res) =>
 {
     let genreList="[";
     genres.forEach(element => {
-        let gr = {};
-        gr.title = element.title;
-        gr.genre_id = element.genre_id;
-        gr.parent = element.parent;
-        gr = JSON.stringify(gr);
-        genreList+=gr + ',';
+        let genre = {};
+        genre.title = element.title;
+        genre.genre_id = element.genre_id;
+        genre.parent = element.parent;
+        genre = JSON.stringify(genre);
+        genreList+=genre + ',';
     });
 
     //Remove any trailing comma
@@ -78,7 +78,7 @@ router.get('/api/genres/', (req, res) =>
     res.send(genreList);
 });
 
-// Display the list of Customers when URL consists of api customers
+// Display the list of Genres when URL consists of api genres
 router.get('/api/genres/', (req, res) => 
 {
     let genreList="[";
@@ -98,6 +98,32 @@ router.get('/api/genres/', (req, res) =>
     //Close the JSON string
     genreList+="]";
     res.send(genreList);
+});
+
+// Display the list of Artists when URL consists of api artists
+router.get('/api/artists/', (req, res) => 
+{
+    let artistList="[";
+    artists.forEach(element => {
+        let artist = {};
+        artist.artist_id = element.artist_id
+        artist.artist_name = element.artist_name
+        artist.artist_location = element.artist_location
+        artist.artist_members = element.artist_members
+        artist.artist_url = element.artist_url
+        artist.artist_website = element.artist_website
+
+        artist = JSON.stringify(artist);
+        artistList+=artist + ',';
+    });
+
+    //Remove any trailing comma
+    let regex = /,$/g;
+    artistList = artistList.replace(regex, "");
+
+    //Close the JSON string
+    artistList+="]";
+    res.send(artistList);
 });
 
 app.use('/', router);
