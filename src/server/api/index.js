@@ -166,6 +166,7 @@ router.get('/api/tracks/', (req, res) =>
 router.get('/api/artists/:artist_name', (req, res) => 
 {
     let artistList="[";
+    let found = false;
     artists.forEach(element => {
         
         console.log('Getting artist id from artist name: ' + typeof element.artist_name + typeof req.name);
@@ -176,8 +177,23 @@ router.get('/api/artists/:artist_name', (req, res) =>
 
             artist = JSON.stringify(artist);
             artistList+=artist + ',';
+
+            found = true;
         }
     });
+    /*
+    let artistList = artists
+      .filter( (artist) => {
+        (artist.artist_name === req.name);
+      }).map( (artist) => {
+            let artist_temp = {};
+            artist_temp.artist_id = element.artist_id;
+            artist = JSON.stringify(artist_temp);
+            return artist;
+      }).reduce( (sum, artist) => {
+            return sum + artist + ','; 
+      })
+    */
 
     //Remove any trailing comma
     let regex = /,$/g;
@@ -185,18 +201,18 @@ router.get('/api/artists/:artist_name', (req, res) =>
 
     //Close the JSON string
     artistList+="]";
-    res.send(artistList);
-
-    /*
+    
     //If there is no valid customer ID, then discplay an error with foll msg
-    if (!true)
-        res.status(404).send('<h2> Oops cant find</h2>');
-    
+    if (!found)
+    {
+      res.status(404).send('<h2> Oops cant find</h2>');
+      //return;
+    }
     else
-        console.log('Getting artist id from artist name: ' + req.name);// + " " + artist.artist_id);  
-    
-    
-    res.send(artist.artist_id);*/
+    {
+      console.log('Getting artist id from artist name: ' + req.name);// + " " + artist.artist_id);  
+      res.send(artistList);
+    }
 });
 
 app.use('/', router);
