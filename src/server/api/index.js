@@ -7,7 +7,7 @@ app.use(express.json());        // Used the JSON file
 // get an instance of router
 const router = express.Router();
 
-//Give date to the server
+//Give data to the server
 var genres = null;
 
 const fs = require("fs");
@@ -38,6 +38,28 @@ router.use(function(req, res, next) {
 router.get('/', (req, res) => 
 {
     res.send('Welcome to server side processing!');
+});
+
+// Display the list of Customers when URL consists of api customers
+router.get('/api/genres/', (req, res) => 
+{
+    let genreList="[";
+    genres.forEach(element => {
+        let gr = {};
+        gr.title = element.title;
+        gr.genre_id = element.genre_id;
+        gr.parent = element.parent;
+        gr = JSON.stringify(gr);
+        genreList+=gr + ',';
+    });
+
+    //Remove any trailing comma
+    let regex = /,$/g;
+    genreList = genreList.replace(regex, "");
+
+    //Close the JSON string
+    genreList+="]";
+    res.send(genreList);
 });
 
 app.use('/', router);
