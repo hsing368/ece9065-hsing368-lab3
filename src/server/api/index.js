@@ -63,6 +63,19 @@ router.use(function(req, res, next) {
     next();
 });
 
+// route middleware to validate :name
+router.param('artist_name', function(req, res, next, name) {
+    // do validation on name here
+    // log something to know its working
+    console.log('performing name validations on ' + name + typeof name);
+
+    // once validation is done save the new item in the req
+    req.name = name;
+
+    // go to the next thing
+    next();
+});
+
 // Read request Handlers
 // Display the Message when the URL consists of '/'
 router.get('/', (req, res) => 
@@ -92,40 +105,18 @@ router.get('/api/genres/', (req, res) =>
     res.send(genreList);
 });
 
-// Display the list of Genres when URL consists of api genres
-router.get('/api/genres/', (req, res) => 
-{
-    let genreList="[";
-    genres.forEach(element => {
-        let gr = {};
-        gr.title = element.title;
-        gr.genre_id = element.genre_id;
-        gr.parent = element.parent;
-        gr = JSON.stringify(gr);
-        genreList+=gr + ',';
-    });
-
-    //Remove any trailing comma
-    let regex = /,$/g;
-    genreList = genreList.replace(regex, "");
-
-    //Close the JSON string
-    genreList+="]";
-    res.send(genreList);
-});
-
 // Display the list of Artists when URL consists of api artists
 router.get('/api/artists/', (req, res) => 
 {
     let artistList="[";
     artists.forEach(element => {
         let artist = {};
-        artist.artist_id = element.artist_id
-        artist.artist_name = element.artist_name
-        artist.artist_location = element.artist_location
-        artist.artist_members = element.artist_members
-        artist.artist_url = element.artist_url
-        artist.artist_website = element.artist_website
+        artist.artist_id = element.artist_id;
+        artist.artist_name = element.artist_name;
+        artist.artist_location = element.artist_location;
+        artist.artist_members = element.artist_members;
+        artist.artist_url = element.artist_url;
+        artist.artist_website = element.artist_website;
 
         artist = JSON.stringify(artist);
         artistList+=artist + ',';
@@ -138,6 +129,37 @@ router.get('/api/artists/', (req, res) =>
     //Close the JSON string
     artistList+="]";
     res.send(artistList);
+});
+
+// Display the list of Artists when URL consists of api artists
+router.get('/api/tracks/', (req, res) => 
+{
+    let trackList="[";
+    tracks.forEach(element => {
+        let track = {};
+        track.album_id = element.album_id;
+        track.album_title = element.album_title;
+        track.artist_id = element.artist_id;
+        track.artist_name = element.artist_name;
+        track.tags = element.tags;
+        track.track_date_created = element.track_date_created;
+        track.track_date_recorded = element.track_date_recorded;
+        track.track_duration = element.track_duration;
+        track.track_genres = element.track_genres;
+        track.track_number = element.track_number;
+        track.track_title = element.track_title;
+        
+        track = JSON.stringify(track);
+        trackList+=track + ',';
+    });
+
+    //Remove any trailing comma
+    let regex = /,$/g;
+    trackList = trackList.replace(regex, "");
+
+    //Close the JSON string
+    trackList+="]";
+    res.send(trackList);
 });
 
 app.use('/', router);
