@@ -11,9 +11,11 @@ const router = express.Router();
 var genres = null;
 var artists = null;
 var tracks = null;
+const max_records = 5;
 
 //Read all the required JSON files
 const fs = require("fs");
+const { lookup } = require('dns');
 fs.readFile("../../../resources/json/genres.json", "utf8", (err, jsonString) => {
   if (err) {
     console.log("Error reading file from disk:", err);
@@ -67,14 +69,28 @@ router.use(function(req, res, next) {
 router.param('artist_name', function(req, res, next, name) {
     // do validation on name here
     // log something to know its working
-    console.log('performing name validations on ' + name + typeof name);
+    console.log('performing name validations on artist name: ' + name + typeof name);
 
     // once validation is done save the new item in the req
-    req.name = name;
+    req.name = name.toString().toLowerCase();
 
     // go to the next thing
     next();
 });
+
+// route middleware to validate :name
+router.param('track_name', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on track name: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.name = name.toString().toLowerCase();
+
+  // go to the next thing
+  next();
+});
+
 
 // Read request Handlers
 // Display the Message when the URL consists of '/'
@@ -151,6 +167,42 @@ router.get('/api/tracks/', (req, res) =>
         
         track = JSON.stringify(track);
         trackList+=track + ',';
+    });
+
+    //Remove any trailing comma
+    let regex = /,$/g;
+    trackList = trackList.replace(regex, "");
+
+    //Close the JSON string
+    trackList+="]";
+    res.send(trackList);
+});
+
+// Display the list of Artists when URL consists of api artists
+router.get('/api/tracks/:track_name', (req, res) => 
+{
+    let trackList="[";
+    let matching_records=0;
+
+    tracks.every(element => {
+
+        if( (element.track_title.toString().toLowerCase()).includes(req.name) )
+        {
+          let track = {};
+          track.track_id = element.track_id;
+          track = JSON.stringify(track);
+          trackList+=track + ',';
+          matching_records++;
+        }
+
+        if (matching_records == max_records)
+        {
+          return false;
+          console.log(element.track_title+"\n"+ matching_records+ max_records+(matching_records == max_records)+"\n\n");
+          //return;
+        }
+        return true;
+        console.log(element.track_title+"\n"+ matching_records+ max_records+(matching_records == max_records)+"\n\n");
     });
 
     //Remove any trailing comma
