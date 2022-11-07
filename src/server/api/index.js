@@ -16,6 +16,7 @@ const max_records = 5;
 //Read all the required JSON files
 const fs = require("fs");
 const { lookup } = require('dns');
+
 fs.readFile("../../../resources/json/genres.json", "utf8", (err, jsonString) => {
   if (err) {
     console.log("Error reading file from disk:", err);
@@ -78,11 +79,24 @@ router.param('artist_name', function(req, res, next, name) {
     next();
 });
 
-// route middleware to validate :name
-router.param('track_name', function(req, res, next, name) {
+// route middleware to validate :tack_id
+router.param('track_id', function(req, res, next, name) {
   // do validation on name here
   // log something to know its working
-  console.log('performing name validations on track name: ' + name + typeof name);
+  console.log('performing name validations on track id: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.id = parseInt(name);
+
+  // go to the next thing
+  next();
+});
+
+// route middleware to validate :title 
+router.param('title', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on track title: ' + name + typeof name);
 
   // once validation is done save the new item in the req
   req.name = name.toString().toLowerCase();
@@ -91,7 +105,6 @@ router.param('track_name', function(req, res, next, name) {
   next();
 });
 
-
 // Read request Handlers
 // Display the Message when the URL consists of '/'
 router.get('/', (req, res) => 
@@ -99,7 +112,8 @@ router.get('/', (req, res) =>
     res.send('Welcome to server side processing!');
 });
 
-// Display the list of Customers when URL consists of api customers
+// Display the list of Customers when URL consists of api genres
+//#1.	Get all available genre names, IDs and parent IDs. 
 router.get('/api/genres/', (req, res) => 
 {
     let genreList="[";
@@ -122,6 +136,7 @@ router.get('/api/genres/', (req, res) =>
 });
 
 // Display the list of Artists when URL consists of api artists
+//#2.	Get the artist details (at least 6 key attributes) given  an artist ID. 
 router.get('/api/artists/', (req, res) => 
 {
     let artistList="[";
@@ -148,25 +163,32 @@ router.get('/api/artists/', (req, res) =>
 });
 
 // Display the list of Artists when URL consists of api artists
-router.get('/api/tracks/', (req, res) => 
+//#3.	Get the following details for a given track ID: album_id, album_title, 
+//artist_id, artist_name, tags, track_date_created, track_date_recorded, track_duration, 
+//track_genres, track_number, track_title 
+router.get('/api/tracks/:track_id', (req, res) => 
 {
     let trackList="[";
     tracks.forEach(element => {
-        let track = {};
-        track.album_id = element.album_id;
-        track.album_title = element.album_title;
-        track.artist_id = element.artist_id;
-        track.artist_name = element.artist_name;
-        track.tags = element.tags;
-        track.track_date_created = element.track_date_created;
-        track.track_date_recorded = element.track_date_recorded;
-        track.track_duration = element.track_duration;
-        track.track_genres = element.track_genres;
-        track.track_number = element.track_number;
-        track.track_title = element.track_title;
-        
-        track = JSON.stringify(track);
-        trackList+=track + ',';
+
+        if ( req.id === element.track_id )
+        {
+          let track = {};
+          track.album_id = element.album_id;
+          track.album_title = element.album_title;
+          track.artist_id = element.artist_id;
+          track.artist_name = element.artist_name;
+          track.tags = element.tags;
+          track.track_date_created = element.track_date_created;
+          track.track_date_recorded = element.track_date_recorded;
+          track.track_duration = element.track_duration;
+          track.track_genres = element.track_genres;
+          track.track_number = element.track_number;
+          track.track_title = element.track_title;
+          
+          track = JSON.stringify(track);
+          trackList+=track + ',';
+        }
     });
 
     //Remove any trailing comma
@@ -179,30 +201,31 @@ router.get('/api/tracks/', (req, res) =>
 });
 
 // Display the list of Artists when URL consists of api artists
-router.get('/api/tracks/:track_name', (req, res) => 
+//#4.	Get the first n number of matching track IDs for a given search pattern matching the track title or album. 
+//If the number of matches is less than n, then return all matches. Please feel free to pick a suitable value for n. 
+router.get('/api/tracks/:title', (req, res) => 
 {
     let trackList="[";
     let matching_records=0;
 
     tracks.every(element => {
 
-        if( (element.track_title.toString().toLowerCase()).includes(req.name) )
-        {
-          let track = {};
-          track.track_id = element.track_id;
-          track = JSON.stringify(track);
-          trackList+=track + ',';
-          matching_records++;
-        }
+    if( (element.track_title.toString().toLowerCase()).includes(req.name) || 
+        (element.album_title.toString().toLowerCase()).includes(req.name))
+    {
+      let track = {};
+      track.track_id = element.track_id;
+      track = JSON.stringify(track);
+      trackList+=track + ',';
+      matching_records++;
+    }
 
-        if (matching_records == max_records)
-        {
-          return false;
-          console.log(element.track_title+"\n"+ matching_records+ max_records+(matching_records == max_records)+"\n\n");
-          //return;
-        }
-        return true;
-        console.log(element.track_title+"\n"+ matching_records+ max_records+(matching_records == max_records)+"\n\n");
+    if (matching_records == max_records)
+    {
+      return false;
+      //return;
+    }
+    return true;
     });
 
     //Remove any trailing comma
@@ -215,21 +238,21 @@ router.get('/api/tracks/:track_name', (req, res) =>
 });
 
 // Display the Information of Specific Artist id when you mention the artist name
+//#5.	Get all the matching artist IDs for a given search pattern matching the artist's name.
 router.get('/api/artists/:artist_name', (req, res) => 
 {
     let artistList="[";
     let found = false;
     artists.forEach(element => {
         
-        console.log('Getting artist id from artist name: ' + typeof element.artist_name + typeof req.name);
-        if ( element.artist_name === req.name )
+        //console.log('Getting artist id from artist name: ' + typeof element.artist_name + typeof req.name);
+        if ( (element.artist_name.toString().toLowerCase()).includes(req.name) )
         {
             let artist = {};
             artist.artist_id = element.artist_id;
 
             artist = JSON.stringify(artist);
             artistList+=artist + ',';
-
             found = true;
         }
     });
@@ -266,6 +289,42 @@ router.get('/api/artists/:artist_name', (req, res) =>
       res.send(artistList);
     }
 });
+
+
+
+//Validate Information
+function validateTrack(track)
+{
+    const schema = Joi.object(
+    {
+      track_title: Joi.string().min(3).required()
+    });
+    return schema.validate(track);
+}
+
+function writeFile (fileName, data)
+{
+  fs.open(fileName, 'a', (err, fd) => {
+  if (err) {
+    console.log(err.message);
+  } else {
+    fs.write(fd, data, (err, bytes) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        console.log(bytes + ' bytes written');
+      }
+    });
+  }
+  fs.close(fd, (err) => {
+    if (err) console.error('failed to close file', err);
+    else {
+      console.log('\n> file closed');
+    }
+  });
+});
+
+}
 
 app.use('/', router);
 
