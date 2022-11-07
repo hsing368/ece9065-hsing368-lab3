@@ -119,6 +119,19 @@ router.param('title', function(req, res, next, name) {
   next();
 });
 
+// route middleware to validate :listname for titles 
+router.param('list_name', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on track title: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.name = name.toString();
+
+  // go to the next thing
+  next();
+});
+
 // Read request Handlers
 // Display the Message when the URL consists of '/'
 router.get('/', (req, res) => 
@@ -342,14 +355,64 @@ router.post('/api/list/', (req, res) =>
     }
 });
 
+//Create User List Information
+//#7.	Save a list of track IDs to a given list name. Return an error if the list name does not exist.
+// Replace existing track IDs with new values if the list exists.
+router.post('/api/tracklist/:list_name', (req, res) =>
+{
+    const { error } = validateTrackList(req.body);
+
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists && user_lists.some(function (element) {
+      return (element.list_name === req.name);
+    });
+
+    if (!is_present)
+    {
+      res.status(400).send(`Oops! Listname ${req.name} not present`);
+    }
+    else
+    {
+      console.log("inside");
+
+      //Increment the customer id
+      const list  = 
+      {
+        list_name: req.body.list_name
+      };
+
+      user_lists.push(list);
+
+      //writeFile ("user_list.json", JSON.stringify(list));
+      res.send(req.body.track_ids);
+    }
+});
+
 //Validate Information
 function validateTrack(track)
 {
     const schema = Joi.object(
     {
-      list_name: Joi.string().min(3).required()
+      list_name: Joi.string().min(2).required()
     });
     return schema.validate(track);
+}
+
+//Validate Information
+function validateTrackList(playList)
+{
+    const schema = Joi.object(
+    {
+      list_name: Joi.string().min(2).required(),
+      track_ids: Joi.array().min(1).required(),
+    });
+    return schema.validate(playList);
 }
 
 function writeFile (fileName, data)
