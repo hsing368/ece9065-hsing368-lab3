@@ -11,6 +11,7 @@ const router = express.Router();
 var genres = null;
 var artists = null;
 var tracks = null;
+var user_lists = null;
 const max_records = 5;
 
 //Read all the required JSON files
@@ -51,6 +52,19 @@ fs.readFile("../../../resources/json/raw_artists.json", "utf8", (err, jsonString
     try {
       console.log("Reading tracks JSON file from disk:");
       tracks = JSON.parse(jsonString);
+    } catch (err) {
+      console.log("Error parsing JSON string:", err);
+    }
+  });
+
+  fs.readFile("../../../resources/json/user_list.json", "utf8", (err, jsonString) => {
+    if (err) {
+      console.log("Error reading file from disk:", err);
+      return;
+    }
+    try {
+      console.log("Reading user_list JSON file from disk:");
+      user_lists = JSON.parse(jsonString);
     } catch (err) {
       console.log("Error parsing JSON string:", err);
     }
@@ -290,40 +304,75 @@ router.get('/api/artists/:artist_name', (req, res) =>
     }
 });
 
+//Create User List Information
+//#6	Create a new list to save a list of tracks with a given list name. Return an error if name exists.
+router.post('/api/list/', (req, res) =>
+{
+    const { error } = validateTrack(req.body);
 
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists && user_lists.some(function (element) {
+      return (element.list_name === req.body.listName);
+    });
+
+    if (is_present)
+    {
+      res.send("Oops list already exists");
+    }
+    else
+    {
+      console.log("inside");
+
+      //Increment the customer id
+      const list  = 
+      {
+        list_name: req.body.list_name
+      };
+
+      user_lists.push(list);
+
+      writeFile ("user_list.json", JSON.stringify(list));
+      res.send(list);
+    }
+});
 
 //Validate Information
 function validateTrack(track)
 {
     const schema = Joi.object(
     {
-      track_title: Joi.string().min(3).required()
+      list_name: Joi.string().min(3).required()
     });
     return schema.validate(track);
 }
 
 function writeFile (fileName, data)
 {
-  fs.open(fileName, 'a', (err, fd) => {
-  if (err) {
-    console.log(err.message);
-  } else {
-    fs.write(fd, data, (err, bytes) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log(bytes + ' bytes written');
+    fs.open(fileName, 'a', (err, fd) => {
+    if (err) {
+      console.log(err.message);
+    } else {
+      fs.write(fd, data, (err, bytes) => {
+        if (err) {
+          console.log(err.message);
+        } else {
+          console.log(bytes + ' bytes written');
+        }
+      });
+    }
+    fs.close(fd, (err) => {
+      if (err) console.error('failed to close file', err);
+      else {
+        console.log('\n> file closed');
       }
     });
-  }
-  fs.close(fd, (err) => {
-    if (err) console.error('failed to close file', err);
-    else {
-      console.log('\n> file closed');
-    }
   });
-});
-
 }
 
 app.use('/', router);
