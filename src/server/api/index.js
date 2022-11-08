@@ -126,7 +126,7 @@ router.param('list_name', function(req, res, next, name) {
   console.log('performing name validations on track title: ' + name + typeof name);
 
   // once validation is done save the new item in the req
-  req.name = name.toString();
+  req.name = name;
 
   // go to the next thing
   next();
@@ -342,7 +342,6 @@ router.post('/api/list/', (req, res) =>
     {
       console.log("inside");
 
-      //Increment the customer id
       const list  = 
       {
         list_name: req.body.list_name
@@ -379,18 +378,129 @@ router.post('/api/tracklist/:list_name', (req, res) =>
     }
     else
     {
-      console.log("inside");
 
-      //Increment the customer id
-      const list  = 
+      let user_track_ids = (req.body.track_ids);//.toString().split(',');
+      let matching_track = [];
+      let track_id_list = [];
+      let total_runtime = 0;
+
+      //For all the input tracks find the matching track in the tracks db
+      user_track_ids.forEach(element =>{
+        
+        tracks.forEach(track =>{
+          if(track.track_id.toString() === element.track_id.toString())
+          {
+            matching_track = 
+            {
+              "album_title": track.album_title,
+              "artist_name": track.artist_name,
+              "track_title": track.track_title,
+              "track_id":    track.track_id,
+              "track_duration": track.track_duration
+            }
+            let temp = track.track_duration.split(':');
+            total_runtime += parseInt(temp[0])*60 + parseInt(temp[1]);
+
+            console.log(track.track_duration);
+          }
+        })
+        track_id_list.push(matching_track);
+      })
+
+      //console.log(track_id_list);
+      console.log(req.name);
+      //For all the input tracks find the matching track in the tracks db
+      user_lists.forEach(element =>
       {
-        list_name: req.body.list_name
-      };
+        if (element.list_name.toString() === req.name.toString())
+        {
+          console.log("inside finally");
+          element.track_list = track_id_list;
+          writeFile ("user_list.json", JSON.stringify(user_lists));
+          element.play_duration = total_runtime;
+        }
+      })
 
-      user_lists.push(list);
+      res.send(user_lists);
+    }
+});
 
-      //writeFile ("user_list.json", JSON.stringify(list));
-      res.send(req.body.track_ids);
+//#8. Get the list of track IDs for a given list. 
+router.get('/api/tracklist/:list_name', (req, res) =>
+{
+    const { error } = validateTrackList(req.body);
+
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists && user_lists.some(function (element) {
+      return (element.list_name === req.name);
+    });
+
+    if (!is_present)
+    {
+      res.status(400).send(`Oops! Listname ${req.name} not present`);
+    }
+    else
+    {
+      //console.log(track_id_list);
+      console.log(req.name);
+      let track_ids=[];
+
+      //For all the input tracks find the matching track in the tracks db
+      user_lists.forEach(element =>
+      {
+        if (element.list_name.toString() === req.name.toString())
+        {
+          element.track_list.forEach(track =>
+          {
+            let temp={};
+            temp.track_id = track.track_id;
+            track_ids.push(temp);
+          });
+          console.log("inside finallyyy");
+        }
+      })
+      console.log(track_ids);
+
+      res.send(track_ids);
+    }
+});
+
+//#9.	Delete a list of tracks with a given name. Return an error if the given list doesn’t exist.
+router.delete('/api/tracklist/:list_name', (req, res) =>
+{
+    const { error } = validateTrackList(req.body);
+
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists && user_lists.some(function (element) {
+      return (element.list_name === req.name);
+    });
+
+    if (!is_present)
+    {
+      res.status(400).send(`Oops! Listname ${req.name} not present`);
+    }
+    else
+    {
+      const customer = user_lists.find(c => c.list_name === req.name.toString());
+      const index = user_lists.indexOf(customer);
+      user_lists.splice(index, 1);
+
+      writeFile ("user_list.json", JSON.stringify(user_lists));
+
+      res.send(customer);
+
     }
 });
 
@@ -417,7 +527,7 @@ function validateTrackList(playList)
 
 function writeFile (fileName, data)
 {
-    fs.open(fileName, 'a', (err, fd) => {
+    fs.open(`../../../resources/json/${fileName}`, 'w', (err, fd) => {
     if (err) {
       console.log(err.message);
     } else {
