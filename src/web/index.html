@@ -1,1 +1,45 @@
- 
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+<h1 style="background-color: yellow; text-align: center;">MUSIC APP</h1>
+<h2>Get Tracks:</h2>
+<button id="get-button" type="submit">Get Tracks</button>
+<select name="sort-options" id="sort-options">
+<option value="" disabled selected>Sort By</option>
+<option value="track-name">Track Name</option>
+<option value="album-name">Album Name</option>
+<option value="artist">Artist</option>
+<option value="track-id">Track ID</option>
+</select>
+<button id="reset-button" type="submit">Search</button>
+<h2>Search Music By:</h2>
+<input id="search-input" type="text" placeholder="Search.." name="search">
+<select name="search-options" id="search-options">
+<option value="" disabled selected>Search By</option>
+<option value="track-name">Track Name</option>
+<option value="album-name">Album Name</option>
+<option value="artist">Artist</option>
+
+<option value="track-id">Track ID</option>
+</select>
+<button id="submit-button" type="submit">Search</button>
+<h2>Add tracks to List:</h2>
+<input id="add-input" type="text" placeholder="Add Name" name="search">
+<br /><br /> <br />
+<input id="search-input" type="text" placeholder="Search.." name="search">
+<select name="search-options" id="search-options">
+<option value="" disabled selected>Search By</option>
+<option value="track-name">Track Name</option>
+<option value="album-name">Album Name</option>
+<option value="artist">Artist</option>
+<option value="track-id">Track ID</option>
+</select>
+<button id="submit-button" type="submit">Search</button>
+<button id="save-button" type="submit">Save</button>
+<h2>Create New List:</h2>
+<input id="create-input" type="text" placeholder="Search.." name="search">
+<button id="create-button" type="submit">Search</button>
+</body>
+</html>

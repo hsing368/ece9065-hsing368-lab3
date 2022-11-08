@@ -1,0 +1,136 @@
+#search-input {
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid grey;
+    float: left;
+    width: 30%;
+    background: #f1f1f1;
+    }
+    #search-options {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #submit-button {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #submit-button:hover {
+    background: #0b7dda;
+    }
+    #submit-button::after {
+    content: "";
+    clear: both;
+    display: table;
+    }
+    #create-input {
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid grey;
+    float: left;
+    width: 30%;
+    background: #f1f1f1;
+    }
+    #add-input {
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid grey;
+    float: left;
+    width: 30%;
+    background: #f1f1f1;
+    
+    }
+    #create-button {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #create-button:hover {
+    background: #0b7dda;
+    }
+    #create-button::after {
+    content: "";
+    clear: both;
+    display: table;
+    }
+    #save-button {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #save-button:hover {
+    background: #0b7dda;
+    }
+    #save-button::after {
+    content: "";
+    clear: both;
+    display: table;
+    }
+    #get-button {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #get-button:hover {
+    background: #0b7dda;
+    }
+    #get-button::after {
+    
+    content: "";
+    clear: both;
+    display: table;
+    }
+    #sort-options {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #reset-button {
+    width: 20%;
+    height: 39px;
+    background: #2196F3;
+    color: white;
+    font-size: 15px;
+    border: 1px solid grey;
+    margin-left: 10px;
+    cursor: pointer;
+    }
+    #reset-button:hover {
+    background: #0b7dda;
+    }
+    #reset-button::after {
+    content: "";
+    clear: both;
+    display: table;
+    }

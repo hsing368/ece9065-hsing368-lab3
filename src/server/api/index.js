@@ -506,7 +506,7 @@ router.delete('/api/tracklist/:list_name', (req, res) =>
 
 //#10.	Get a list of list names, number of tracks that are saved in each list
 //and the total play time of each list.
-router.get('/api/listinfo/', (req, res) =>
+router.get('/api/listinfo', (req, res) =>
 {
     const { error } = validateTrackList(req.body);
 
@@ -534,7 +534,11 @@ router.get('/api/listinfo/', (req, res) =>
       {
         let temp={};
         temp.list_name = element.list_name.toString();
-        temp.num_of_tracks = element.track_list.legth;
+        let count = 0;
+        for(let key in element.track_list) {
+          count ++;
+        }
+        temp.num_of_tracks = count;
         temp.play_duration = element.play_duration;
         list_info.push(temp);
       })
