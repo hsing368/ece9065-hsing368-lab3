@@ -416,8 +416,8 @@ router.post('/api/tracklist/:list_name', (req, res) =>
         {
           console.log("inside finally");
           element.track_list = track_id_list;
-          writeFile ("user_list.json", JSON.stringify(user_lists));
           element.play_duration = total_runtime;
+          writeFile ("user_list.json", JSON.stringify(user_lists));
         }
       })
 
@@ -501,6 +501,46 @@ router.delete('/api/tracklist/:list_name', (req, res) =>
 
       res.send(customer);
 
+    }
+});
+
+//#10.	Get a list of list names, number of tracks that are saved in each list
+//and the total play time of each list.
+router.get('/api/listinfo/', (req, res) =>
+{
+    const { error } = validateTrackList(req.body);
+
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists;
+
+    if (!is_present)
+    {
+      res.status(400).send("Oops! List is empty not present");
+    }
+    else
+    {
+      //console.log(track_id_list);
+      console.log(req.name);
+      let list_info=[];
+
+      //For all the input tracks find the matching track in the tracks db
+      user_lists.forEach(element =>
+      {
+        let temp={};
+        temp.list_name = element.list_name.toString();
+        temp.num_of_tracks = element.track_list.legth;
+        temp.play_duration = element.play_duration;
+        list_info.push(temp);
+      })
+      console.log(list_info);
+
+      res.send(list_info);
     }
 });
 
