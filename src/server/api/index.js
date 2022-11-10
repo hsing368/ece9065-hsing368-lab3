@@ -2,6 +2,14 @@ const express = require('express');     //import express
 const res = require('express/lib/response');
 const Joi = require('joi');     //Import joi
 const app = express();          //Create Express Application on the app variable
+
+app.use(function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', '*');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  next();
+});
+
 app.use(express.json());        // Used the JSON file
 
 // get an instance of router
@@ -110,7 +118,46 @@ router.param('track_id', function(req, res, next, name) {
 router.param('title', function(req, res, next, name) {
   // do validation on name here
   // log something to know its working
+  console.log('performing name validations on track or album title: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.name = name.toString().toLowerCase();
+
+  // go to the next thing
+  next();
+});
+
+// route middleware to validate :title 
+router.param('track_title', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
   console.log('performing name validations on track title: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.name = name.toString().toLowerCase();
+
+  // go to the next thing
+  next();
+});
+
+// route middleware to validate :title 
+router.param('album_title', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on album title: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.name = name.toString().toLowerCase();
+
+  // go to the next thing
+  next();
+});
+
+// route middleware to validate :title 
+router.param('artist_title', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on artist title: ' + name + typeof name);
 
   // once validation is done save the new item in the req
   req.name = name.toString().toLowerCase();
@@ -143,22 +190,22 @@ router.get('/', (req, res) =>
 //#1.	Get all available genre names, IDs and parent IDs. 
 router.get('/api/genres/', (req, res) => 
 {
-    let genreList="[";
+    let genreList= [];
     genres.forEach(element => {
         let genre = {};
         genre.title = element.title;
         genre.genre_id = element.genre_id;
         genre.parent = element.parent;
-        genre = JSON.stringify(genre);
-        genreList+=genre + ',';
+        //genre = JSON.stringify(genre);
+        genreList.push(genre)// + ',';
     });
 
     //Remove any trailing comma
-    let regex = /,$/g;
-    genreList = genreList.replace(regex, "");
+    //let regex = /,$/g;
+    //genreList = genreList.replace(regex, "");
 
     //Close the JSON string
-    genreList+="]";
+    //genreList+="]";
     res.send(genreList);
 });
 
@@ -166,7 +213,7 @@ router.get('/api/genres/', (req, res) =>
 //#2.	Get the artist details (at least 6 key attributes) given  an artist ID. 
 router.get('/api/artists/', (req, res) => 
 {
-    let artistList="[";
+    let artistList=[];//"[";
     artists.forEach(element => {
         let artist = {};
         artist.artist_id = element.artist_id;
@@ -176,16 +223,16 @@ router.get('/api/artists/', (req, res) =>
         artist.artist_url = element.artist_url;
         artist.artist_website = element.artist_website;
 
-        artist = JSON.stringify(artist);
-        artistList+=artist + ',';
+        //artist = JSON.stringify(artist);
+        artistList.push(artist);// + ',';
     });
 
     //Remove any trailing comma
-    let regex = /,$/g;
-    artistList = artistList.replace(regex, "");
+    //let regex = /,$/g;
+    //artistList = artistList.replace(regex, "");
 
     //Close the JSON string
-    artistList+="]";
+    //artistList+="]";
     res.send(artistList);
 });
 
@@ -195,7 +242,7 @@ router.get('/api/artists/', (req, res) =>
 //track_genres, track_number, track_title 
 router.get('/api/tracks/:track_id', (req, res) => 
 {
-    let trackList="[";
+    let trackList=[];//"[";
     tracks.forEach(element => {
 
         if ( req.id === element.track_id )
@@ -213,17 +260,17 @@ router.get('/api/tracks/:track_id', (req, res) =>
           track.track_number = element.track_number;
           track.track_title = element.track_title;
           
-          track = JSON.stringify(track);
-          trackList+=track + ',';
+          //track = JSON.stringify(track);
+          trackList.push(track);// + ',';
         }
     });
 
     //Remove any trailing comma
-    let regex = /,$/g;
-    trackList = trackList.replace(regex, "");
+    //let regex = /,$/g;
+    //trackList = trackList.replace(regex, "");
 
     //Close the JSON string
-    trackList+="]";
+    //trackList+="]";
     res.send(trackList);
 });
 
@@ -232,7 +279,7 @@ router.get('/api/tracks/:track_id', (req, res) =>
 //If the number of matches is less than n, then return all matches. Please feel free to pick a suitable value for n. 
 router.get('/api/tracks/:title', (req, res) => 
 {
-    let trackList="[";
+    let trackList=[];//"[";
     let matching_records=0;
 
     tracks.every(element => {
@@ -242,8 +289,8 @@ router.get('/api/tracks/:title', (req, res) =>
     {
       let track = {};
       track.track_id = element.track_id;
-      track = JSON.stringify(track);
-      trackList+=track + ',';
+      //track = JSON.stringify(track);
+      trackList.push(track);// + ',';
       matching_records++;
     }
 
@@ -256,19 +303,75 @@ router.get('/api/tracks/:title', (req, res) =>
     });
 
     //Remove any trailing comma
-    let regex = /,$/g;
-    trackList = trackList.replace(regex, "");
+    //let regex = /,$/g;
+    //trackList = trackList.replace(regex, "");
 
     //Close the JSON string
-    trackList+="]";
+    //trackList+="]";
     res.send(trackList);
+});
+
+function getTrack (title_type, title)
+{
+  let trackList=[];//"[";
+  let matching_records=0;
+
+  tracks.every(element => {
+
+  if( (element[title_type].toString().toLowerCase()).includes(title) )
+  {
+    let track = {};
+    track.album_title = element.album_title;
+    track.artist_name = element.artist_name;
+    track.track_title = element.track_title;
+    track.track_id = element.track_id;
+    track.track_duration = element.track_duration;
+
+    //track = JSON.stringify(track);
+    trackList.push(track);// + ',';
+    matching_records++;
+  }
+
+  if (matching_records == max_records)
+  {
+    return false;
+    //return;
+  }
+  return true;
+  });
+
+  //Remove any trailing comma
+  //let regex = /,$/g;
+  //trackList = trackList.replace(regex, "");
+
+  //Close the JSON string
+  //trackList+="]";
+  return trackList;
+}
+
+router.get('/api/tracks/trackname/:track_title', (req, res) => 
+{
+    let trackList=getTrack("track_title", req.name);//[];//"[";
+    res.send(trackList);
+});
+
+router.get('/api/tracks/albumname/:album_title', (req, res) => 
+{
+  let trackList=getTrack("album_title", req.name);//[];//"[";
+  res.send(trackList);
+});
+
+router.get('/api/tracks/artistname/:artist_title', (req, res) => 
+{
+  let trackList=getTrack("artist_name", req.name);//[];//"[";
+  res.send(trackList);
 });
 
 // Display the Information of Specific Artist id when you mention the artist name
 //#5.	Get all the matching artist IDs for a given search pattern matching the artist's name.
 router.get('/api/artists/:artist_name', (req, res) => 
 {
-    let artistList="[";
+    let artistList=[];//"[";
     let found = false;
     artists.forEach(element => {
         
@@ -278,8 +381,8 @@ router.get('/api/artists/:artist_name', (req, res) =>
             let artist = {};
             artist.artist_id = element.artist_id;
 
-            artist = JSON.stringify(artist);
-            artistList+=artist + ',';
+            //artist = JSON.stringify(artist);
+            artistList.push(artist);// + ',';
             found = true;
         }
     });
@@ -298,11 +401,11 @@ router.get('/api/artists/:artist_name', (req, res) =>
     */
 
     //Remove any trailing comma
-    let regex = /,$/g;
-    artistList = artistList.replace(regex, "");
+    //let regex = /,$/g;
+    //artistList = artistList.replace(regex, "");
 
     //Close the JSON string
-    artistList+="]";
+    //artistList+="]";
     
     //If there is no valid customer ID, then discplay an error with foll msg
     if (!found)
@@ -321,6 +424,7 @@ router.get('/api/artists/:artist_name', (req, res) =>
 //#6	Create a new list to save a list of tracks with a given list name. Return an error if name exists.
 router.post('/api/list/', (req, res) =>
 {
+  let lists=[];
     const { error } = validateTrack(req.body);
 
     if (error)
@@ -331,12 +435,12 @@ router.post('/api/list/', (req, res) =>
 
     //Check if new list name is already present in the list
     var is_present = user_lists && user_lists.some(function (element) {
-      return (element.list_name === req.body.listName);
+      return (element.list_name === (req.body.list_name).toString());
     });
 
     if (is_present)
     {
-      res.send("Oops list already exists");
+      res.status(400).send("Oops list already exists");
     }
     else
     {
@@ -348,8 +452,8 @@ router.post('/api/list/', (req, res) =>
       };
 
       user_lists.push(list);
-
-      writeFile ("user_list.json", JSON.stringify(list));
+      //console.log(user_lists);
+      writeFile ("user_list.json", JSON.stringify(user_lists));
       res.send(list);
     }
 });
@@ -428,7 +532,7 @@ router.post('/api/tracklist/:list_name', (req, res) =>
 //#8. Get the list of track IDs for a given list. 
 router.get('/api/tracklist/:list_name', (req, res) =>
 {
-    const { error } = validateTrackList(req.body);
+    const { error } = false;//validateTrackList(req.body);
 
     if (error)
     {
@@ -459,7 +563,11 @@ router.get('/api/tracklist/:list_name', (req, res) =>
           element.track_list.forEach(track =>
           {
             let temp={};
-            temp.track_id = track.track_id;
+            temp.album_title = track.album_title,
+            temp.artist_name = track.artist_name,
+            temp.track_title = track.track_title,
+            temp.track_id = track.track_id,
+            temp.track_duration = track.track_duration
             track_ids.push(temp);
           });
           console.log("inside finallyyy");
@@ -563,8 +671,8 @@ function validateTrackList(playList)
 {
     const schema = Joi.object(
     {
-      list_name: Joi.string().min(2).required(),
-      track_ids: Joi.array().min(1).required(),
+      //list_name: Joi.string().min(2).required(),
+      //track_ids: Joi.array().min(1).required(),
     });
     return schema.validate(playList);
 }
@@ -595,5 +703,5 @@ function writeFile (fileName, data)
 app.use('/', router);
 
 //PORT ENVIRONMENT VARIABLE
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 1000;
 app.listen(port, () => console.log(`Listening on port ${port}..`));

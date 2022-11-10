@@ -1,4 +1,4 @@
-#search-input {
+#track-search-input {
     padding: 10px;
     font-size: 15px;
     border: 1px solid grey;
@@ -6,7 +6,7 @@
     width: 30%;
     background: #f1f1f1;
     }
-    #search-options {
+#track-search-options {
     width: 20%;
     height: 39px;
     background: #2196F3;
@@ -34,7 +34,7 @@
     clear: both;
     display: table;
     }
-    #create-input {
+    #create-input-list {
     padding: 10px;
     font-size: 15px;
     border: 1px solid grey;
@@ -42,7 +42,7 @@
     width: 30%;
     background: #f1f1f1;
     }
-    #add-input {
+    #search-input-list {
     padding: 10px;
     font-size: 15px;
     border: 1px solid grey;
@@ -51,7 +51,7 @@
     background: #f1f1f1;
     
     }
-    #create-button {
+    #create-button-list{
     width: 20%;
     height: 39px;
     background: #2196F3;
@@ -61,10 +61,10 @@
     margin-left: 10px;
     cursor: pointer;
     }
-    #create-button:hover {
+    #create-button-list:hover {
     background: #0b7dda;
     }
-    #create-button::after {
+    #create-button-list::after {
     content: "";
     clear: both;
     display: table;
@@ -106,7 +106,7 @@
     clear: both;
     display: table;
     }
-    #sort-options {
+.sort-options {
     width: 20%;
     height: 39px;
     background: #2196F3;
