@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <h1 style="background-color: yellow; text-align: center;">MUSIC APP</h1>
+
+    <h2>Get Tracks:</h2>
+    <button id="get-button" type="submit">Get Tracks</button>
+    <select name="sort-options" id="sort-options" class="sort-options">
+        <option value="" disabled selected>Sort By</option>
+        <option value="track-name">Track Name</option>
+        <option value="album-name">Album Name</option>
+        <option value="artist">Artist</option>
+        <option value="track-id">Track ID</option>
+    </select>
+
+    <!--For search tracks by track title, album name or artist name-->
+    <button id="reset-button" type="submit">Search</button>
+    <h2>Search Music By:</h2>
+    <input id="track-search-input" type="text" placeholder="Search.." name="search">
+    <select name="track-search-options" id="track-search-options">
+        <option value="" disabled selected>Search By</option>
+        <option value="trackname">Track Name</option>
+        <option value="albumname">Album Name</option>
+        <option value="artistname">Artist</option>
+    </select>
+
+    <select name="track-sort-options" id="track-sort-options" class="sort-options">
+        <option value=-1 disabled selected>Sort By</option>
+        <option value=4>Track Name</option>
+        <option value=0>Album Name</option>
+        <option value=1>Artist</option>
+        <option value=2>Track Duration</option>
+    </select>
+
+    <!--Placeholder to save track search results-->
+    <button id="submit-button" type="submit" onclick="get_track_list()">Search</button>
+    
+    <div id="dyn-wrapper">
+        <ol id="dyn-search-list">
+
+        </ol>
+    </div>
+
+    <!--Create new Track list-->
+    <h2>Create New List:</h2>
+    <input id="create-input-list" type="text" placeholder="Add List name.." name="search">
+    <button id="create-button-list" type="submit" onclick="create_track_list()">Create List</button>
+
+    
+    <h2>Add tracks to List:</h2>
+    <input id="search-input-list" type="text" placeholder="Add List Name" name="search">
+    <button id="search-input-list" type="submit" onclick="search_track_list()">Search List</button>
+
+    <br /><br /> <br />
+    <input id="search-input" type="text" placeholder="Search.." name="search">
+    <select name="search-options" id="search-options">
+        <option value="" disabled selected>Search By</option>
+        <option value="track-name">Track Name</option>
+        <option value="album-name">Album Name</option>
+        <option value="artist">Artist</option>
+        <option value="track-id">Track ID</option>
+    </select>
+
+    <button id="submit-button" type="submit">Search</button>
+    <button id="save-button" type="submit">Save</button>
+
+    <script src="app.js"></script>
+</body>
+</html>
