@@ -10,6 +10,8 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use('/', express.static('../../web'));
+
 app.use(express.json());        // Used the JSON file
 
 // get an instance of router
@@ -86,6 +88,19 @@ router.use(function(req, res, next) {
 
     // continue doing what we were doing and go to the route
     next();
+});
+
+// route middleware to validate :name
+router.param('artist_id', function(req, res, next, name) {
+  // do validation on name here
+  // log something to know its working
+  console.log('performing name validations on artist id: ' + name + typeof name);
+
+  // once validation is done save the new item in the req
+  req.id = parseInt(name);
+
+  // go to the next thing
+  next();
 });
 
 // route middleware to validate :name
@@ -211,20 +226,22 @@ router.get('/api/genres/', (req, res) =>
 
 // Display the list of Artists when URL consists of api artists
 //#2.	Get the artist details (at least 6 key attributes) given  an artist ID. 
-router.get('/api/artists/', (req, res) => 
+router.get('/api/artists/:artist_id', (req, res) => 
 {
     let artistList=[];//"[";
     artists.forEach(element => {
-        let artist = {};
-        artist.artist_id = element.artist_id;
-        artist.artist_name = element.artist_name;
-        artist.artist_location = element.artist_location;
-        artist.artist_members = element.artist_members;
-        artist.artist_url = element.artist_url;
-        artist.artist_website = element.artist_website;
-
-        //artist = JSON.stringify(artist);
-        artistList.push(artist);// + ',';
+        if (req.id === element.artist_id)
+        {
+          let artist = {};
+          artist.artist_id = element.artist_id;
+          artist.artist_name = element.artist_name;
+          artist.artist_location = element.artist_location;
+          artist.artist_members = element.artist_members;
+          artist.artist_url = element.artist_url;
+          artist.artist_website = element.artist_website;
+          //artist = JSON.stringify(artist);
+          artistList.push(artist);// + ',';
+        }
     });
 
     //Remove any trailing comma
@@ -277,7 +294,7 @@ router.get('/api/tracks/:track_id', (req, res) =>
 // Display the list of Artists when URL consists of api artists
 //#4.	Get the first n number of matching track IDs for a given search pattern matching the track title or album. 
 //If the number of matches is less than n, then return all matches. Please feel free to pick a suitable value for n. 
-router.get('/api/tracks/:title', (req, res) => 
+router.get('/api/titlename/:title', (req, res) => 
 {
     let trackList=[];//"[";
     let matching_records=0;
@@ -463,8 +480,9 @@ router.post('/api/list/', (req, res) =>
 // Replace existing track IDs with new values if the list exists.
 router.post('/api/tracklist/:list_name', (req, res) =>
 {
-    const { error } = validateTrackList(req.body);
-
+    console.log("Hola");
+    const { error } = validateTrackList(req.body.params);
+    console.log(error);
     if (error)
     {
         res.status(400).send(error.details[0].message)
@@ -487,6 +505,7 @@ router.post('/api/tracklist/:list_name', (req, res) =>
       let matching_track = [];
       let track_id_list = [];
       let total_runtime = 0;
+      console.log(user_track_ids);
 
       //For all the input tracks find the matching track in the tracks db
       user_track_ids.forEach(element =>{
@@ -513,14 +532,99 @@ router.post('/api/tracklist/:list_name', (req, res) =>
 
       //console.log(track_id_list);
       console.log(req.name);
-      //For all the input tracks find the matching track in the tracks db
-      user_lists.forEach(element =>
+      //Add find the matching track in the given list
+      user_lists.forEach(user_list =>
       {
-        if (element.list_name.toString() === req.name.toString())
+        if (user_list.list_name.toString() === req.name.toString())
         {
           console.log("inside finally");
-          element.track_list = track_id_list;
-          element.play_duration = total_runtime;
+          if (user_list.track_list)
+          {
+            track_id_list.forEach(element =>{
+            user_list.track_list.push(element);
+            });
+          }
+          else
+          {
+            user_list.track_list = track_id_list;
+          }
+          
+          user_list.play_duration = total_runtime;
+          writeFile ("user_list.json", JSON.stringify(user_lists));
+        }
+      })
+
+      res.send(user_lists);
+    }
+});
+
+//#9.	Delete a list of tracks with a given name. Return an error if the given list doesn’t exist.
+router.delete('/api/modifylist/:list_name', (req, res) =>
+{
+    const { error } = false;//validateTrackList(req.body);
+
+    if (error)
+    {
+        res.status(400).send(error.details[0].message)
+        return;
+    }
+
+    //Check if new list name is already present in the list
+    var is_present = user_lists && user_lists.some(function (element) {
+      return (element.list_name === req.name);
+    });
+
+    if (!is_present)
+    {
+      res.status(400).send(`Oops! Listname ${req.name} not present`);
+    }
+    else
+    {
+
+      let user_track_ids = (req.body.track_ids);//.toString().split(',');
+      let matching_track = [];
+      let track_id_list = [];
+      let total_runtime_dec = 0;
+      console.log(user_track_ids);
+
+      //console.log(track_id_list);
+      console.log(req.name);
+      //Add find the matching track in the given list
+      user_lists.forEach(user_list =>
+      {
+        if (user_list.list_name.toString() === req.name.toString())
+        {
+          console.log("inside finally");
+          if (user_list.track_list)
+          {
+            //For all the input tracks find the matching track in the tracks db
+            user_track_ids.forEach(element =>{
+              const curr_track = user_list.track_list.find(c => c.track_id.toString() === element.track_id.toString());
+              const index = user_list.track_list.indexOf(curr_track);
+
+              if(index < 0)
+              {
+                return ;
+              }
+              else
+              {
+                let curr_track_playtime = curr_track.track_duration.split(':');
+                total_runtime_dec += parseInt(curr_track_playtime[0])*60 + parseInt(curr_track_playtime[1]);
+                user_list.track_list.splice(index, 1);
+              }
+            })
+          }
+          else
+          {
+            return;
+          }
+          
+          user_list.play_duration -= total_runtime_dec;
+          if(user_list.play_duration <=0 )
+          {
+            delete user_list.play_duration;
+            delete user_list.track_list;
+          }
           writeFile ("user_list.json", JSON.stringify(user_lists));
         }
       })
@@ -579,10 +683,10 @@ router.get('/api/tracklist/:list_name', (req, res) =>
     }
 });
 
-//#9.	Delete a list of tracks with a given name. Return an error if the given list doesn’t exist.
+//#9.	Delete a complete list with a given name. Return an error if the given list doesn’t exist.
 router.delete('/api/tracklist/:list_name', (req, res) =>
 {
-    const { error } = validateTrackList(req.body);
+    const { error } = false;//validateTrackList(req.body);
 
     if (error)
     {
@@ -616,7 +720,7 @@ router.delete('/api/tracklist/:list_name', (req, res) =>
 //and the total play time of each list.
 router.get('/api/listinfo', (req, res) =>
 {
-    const { error } = validateTrackList(req.body);
+    const { error } = false;//validateTrackList(req.body);
 
     if (error)
     {
@@ -647,7 +751,8 @@ router.get('/api/listinfo', (req, res) =>
           count ++;
         }
         temp.num_of_tracks = count;
-        temp.play_duration = element.play_duration;
+        temp.play_duration = element.play_duration ? element.play_duration : 0;
+        console.log(element.play_duration/60+":"+element.play_duration%60);
         list_info.push(temp);
       })
       console.log(list_info);
@@ -671,8 +776,7 @@ function validateTrackList(playList)
 {
     const schema = Joi.object(
     {
-      //list_name: Joi.string().min(2).required(),
-      //track_ids: Joi.array().min(1).required(),
+      track_ids: Joi.array().min(1).required(),
     });
     return schema.validate(playList);
 }
@@ -703,5 +807,5 @@ function writeFile (fileName, data)
 app.use('/', router);
 
 //PORT ENVIRONMENT VARIABLE
-const port = process.env.PORT || 1000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}..`));
